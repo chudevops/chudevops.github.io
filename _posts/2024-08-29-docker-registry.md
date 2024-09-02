@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Docker Registry 설정 및 관리 자동화"
-date: 2024-08-29 08:00:00 +0900
+date: 2024-08-29 20:00:00 +0900
 categories: [Docker, Registry]
 tags: [docker, registry, automation]
 toc: true
@@ -15,46 +15,38 @@ Docker Registry는 Docker 이미지를 저장하고 관리하는 서버로 여�
 Docker Hub에서 이미지를 Pull 하고 Docker Registry 서버를 실행하는 방법을 설명합니다.  
 이미지 Create, Pull, Run 작업 스크립트를 통해 자동화하는 방법을 다룹니다.
 
-### 목표
+## 목차
+
+1. [목표](#목표)
+2. [주요 특징](#주요-특징)
+3. [기술 스택](#기술-스택)
+4. [아키텍처](#아키텍처)
+5. [프로젝트 구조](#프로젝트-구조)
+6. [주요 구성 요소](#주요-구성-요소)
+7. [기술적 과제](#기술적-과제)
+8. [사용 방법](#사용-방법)
+9. [결론](#결론)
+10. [향후 계획](#향후-계획)
+11. [참고 자료](#참고-자료)
+
+## 목표
 
 - Docker Registry 설치 및 관리 간소화
 - Docker 이미지의 Create, Pull, Run 작업 자동화
 - 스크립트를 통한 효율적인 배포 및 유지보수
 
-### 주요 특징
+## 주요 특징
 
 - **이미지 생성**: 스크립트를 사용하여 Docker Registry 이미지를 생성하고 태깅
 - **이미지 Pull**:  Docker Hub에서 이미지를 풀하는 스크립트 제공
 - **컨테이너 실행**: Docker Registry 컨테이너 설정 및 실행 자동화
 - **자동화**: 스크립트를 통해 반복 작업을 줄이고 효율적인 운영
 
-## 목차
-
-1. [기술 스택](#기술-스택)
-2. [프로젝트 구조](#프로젝트-구조)
-3. [아키텍처](#아키텍처)
-4. [주요 구성 요소](#주요-구성-요소)
-5. [기술적 과제](#기술적-과제)
-6. [사용 방법](#사용-방법)
-7. [결론](#결론)
-8. [향후 계획](#향후-계획)
-
 ## 기술 스택
 
 - Base Image: Docker Registry
 - Automation Scripts: Shell Scripts
 - Container: Docker
-
-## 프로젝트 구조
-
-> **소스 코드**는 [GitHub 레포지토리](https://github.com/chudevops/docker-build/tree/master/registry)에서 확인할 수 있습니다.
-
-```plaintext
-registry/
-├── build.sh
-├── pull_image.sh
-└── run.sh
-```
 
 ## 아키텍처
 
@@ -94,16 +86,30 @@ registry/
    2. Docker Daemon이 저장된 Blob과 Manifest 데이터를 사용하여 컨테이너를 생성
    3. 컨테이너가 생성되고 애플리케이션 실행이 완료되었음을 Docker Client에 알림
 
+## 프로젝트 구조
+
+> **소스 코드**는 [GitHub 레포지토리](https://github.com/chudevops/docker-build/tree/master/registry)에서 확인할 수 있습니다.
+
+```plaintext
+registry/
+├── build.sh
+├── pull_image.sh
+└── run.sh
+```
+
 ## 주요 구성 요소
 
-### 1. **이미지 생성 스크립트**
-Docker Hub에서 Docker Registry 이미지를 다운로드하고 로컬 또는 지정된 레지스트리에 태깅하는 작업을 자동으로 처리합니다.
+### 1. 이미지 생성 및 관리
+Docker Hub에서 Docker Registry 이미지를 다운로드하고 로컬 또는 지정된 레지스트리에 태깅하는 작업을 자동으로 처리합니다. 이 스크립트를 통해 Docker Registry 이미지의 생성과 관리를 간편하게 수행할 수 있습니다.
 
-### 2. **이미지 Pull 스크립트**
-Docker Hub에서 최신 Docker Registry 이미지를 가져옵니다.
+- **이미지 생성**: Docker Registry 이미지를 로컬 환경에서 생성하고 필요한 태그를 적용
+- **자동 태깅**: 생성된 이미지를 지정된 레지스트리에 자동으로 태깅하여 배포 준비 완료
 
-### 3. **Registry 실행 스크립트**
-Docker Registry 컨테이너를 백그라운드에서 실행하며 포트와 볼륨 설정이 포함됩니다.
+### 2. 이미지 Pull 및 실행
+Docker Hub에서 최신 Docker Registry 이미지를 가져오고 Registry 컨테이너를 설정하여 백그라운드에서 실행합니다.
+
+- **이미지 Pull**: 최신 Docker Registry 이미지를 자동으로 가져와 로컬 환경에 저장
+- **컨테이너 실행**: Registry 컨테이너를 백그라운드에서 실행하며 포트와 볼륨 설정을 자동화
 
 ## 기술적 과제
 
@@ -124,7 +130,7 @@ Docker Registry 컨테이너를 백그라운드에서 실행하며 포트와 볼
 1. 이미지 생성 및 태깅
 ```bash
 cd registry
-./build.sh [custom_registry_url]
+./build.sh @CUSTOM_REGISTRY_URL@
 ```
 
 2. 이미지 다운로드
@@ -139,9 +145,9 @@ cd registry
 
 ## 결론
 
-- **효율적인 Docker Registry 관리**: 설치 및 설정 과정을 자동화하여 운영을 간소화
-- **편리한 이미지 관리**: 이미지를 쉽게 생성, 태깅하고, 레지스트리에 등록 필요한 이미지를 빠르게 가져와 실행
-- **재사용 가능한 자동화**: 스크립트는 다양한 환경에서 재사용 가능하고 배포와 유지보수 작업을 간편하게 구성
+- **효율적인 Docker Registry 관리**: 설치 및 설정 과정을 자동화하여 운영을 간소화하고 반복적인 작업을 최소화
+- **편리한 이미지 관리**: 이미지를 손쉽게 생성, 태깅하고 필요 시 빠르게 레지스트리에 등록하여 효율적인 운영 가능
+- **자동화된 프로세스**: 스크립트를 통해 이미지 관리와 컨테이너 실행을 자동화하여 운영의 일관성을 높임
 
 ## 향후 계획
 
@@ -151,6 +157,6 @@ cd registry
 
 ## 참고 자료
 
-- [Docker 공식 문서](https://docs.docker.com/)
 - [Docker Hub](https://hub.docker.com/)
 - [Docker Registry 공식 문서](https://hub.docker.com/_/registry)
+- [Docker 공식 문서](https://docs.docker.com/)
